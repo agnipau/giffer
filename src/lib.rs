@@ -266,4 +266,6 @@ pub struct TableBasedImageData<'a> {
     pub image_data: DataSubBlocks<'a>,
 }
 
+pub(crate) const SIGNATURE: &'static [u8] = b"GIF";
+
 pub(crate) const TRAILER: u8 = 0x3b;

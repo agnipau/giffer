@@ -1,7 +1,7 @@
 use crate::{
     ApplicationExtension, ColorTable, CommentExtension, Context, DataSubBlock, DataSubBlocks,
     ExtensionBlock, GifData, GraphicControlExtension, GraphicRenderingBlock, ImageDescriptor,
-    LogicalScreenDescriptor, PlainTextExtension, TableBasedImageData, Version, TRAILER,
+    LogicalScreenDescriptor, PlainTextExtension, TableBasedImageData, Version, SIGNATURE, TRAILER,
 };
 use anyhow::{anyhow, bail};
 use log::{debug, error, info};
@@ -9,30 +9,14 @@ use log::{debug, error, info};
 pub fn decode(bytes: &[u8], discard_comments: bool) -> anyhow::Result<GifData> {
     let mut cx = Context::default();
 
-    if bytes[cx.offset] != b'G' {
+    if &bytes[cx.offset..cx.offset + 3] != SIGNATURE {
         bail!(
-            "invalid signature at offset {}, expected b'G', received '{}'",
-            cx.offset,
-            bytes[cx.offset]
+            "invalid signature: expected '{:x?}', received '{:x?}'",
+            SIGNATURE,
+            &bytes[cx.offset..cx.offset + 3]
         );
     }
-    cx.offset += 1;
-    if bytes[cx.offset] != b'I' {
-        bail!(
-            "invalid signature at offset {}, expected b'I', received '{}'",
-            cx.offset,
-            bytes[cx.offset]
-        );
-    }
-    cx.offset += 1;
-    if bytes[cx.offset] != b'F' {
-        bail!(
-            "invalid signature at offset {}, expected b'F', received '{}'",
-            cx.offset,
-            bytes[cx.offset]
-        );
-    }
-    cx.offset += 1;
+    cx.offset += 3;
 
     let version = Version::decode(&mut cx, bytes)?;
     info!("GIF version: {:?}", version);
